@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>その個人情報、本当に要りますか</title>
+<meta name="description" content="会員登録の項目を、事業者が見直すための考え方と、項目ごとの問い。">
+<meta property="og:title" content="その個人情報、本当に要りますか">
+<meta property="og:description" content="会員登録の項目を、事業者が見直すための考え方と、項目ごとの問い。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://mikiyoko.github.io/security-checkup/business.html">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=M+PLUS+1p:wght@500;700;800&family=Noto+Sans+JP:wght@400;500&family=Poppins:wght@600&display=swap">
+<style>
+/* 色・書体・角丸は、ライフテックコーディネーターのデザインルールに沿う。診断ページと同じトークン。
+   レイアウト：1列の読み物。導入 → 注記 → 考え方4つ → 共通の問い → 項目の表（狭い画面ではカードに組み替え）→ 別枠 → 参考。 */
+:root{
+  --bg:#FBF7F1; --ink:#3D3A36; --card:#FFFFFF; --line:#EAE3D8; --muted:#736B61;
+  --primary:#DC7C5C; --primary-hover:#cf6e4d; --secondary:#8FAE97; --sage-deep:#5F8069; --accent:#E8B05C;
+  --terra-tint:#FBEEE8; --sage-tint:#E9F0EB; --honey-tint:#FBF0DB;
+  --on-primary:#FFFFFF;
+  --r-sm:11px; --r-card:16px; --r-recipe:22px; --r-cta:28px; --r-pill:999px;
+  --shadow-card:0 14px 28px -18px rgba(61,58,54,.28);
+  --ja-h:"M PLUS 1p",system-ui,-apple-system,"Hiragino Kaku Gothic ProN",sans-serif;
+  --ja-b:"Noto Sans JP",system-ui,-apple-system,"Hiragino Kaku Gothic ProN",sans-serif;
+  --en-h:"Poppins",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#211F1D; --ink:#EDE7DE; --card:#2A2724; --line:#3B3733; --muted:#ABA298;
+    --primary:#E68E6E; --primary-hover:#EFA084; --secondary:#9DBCA5; --sage-deep:#9DBCA5; --accent:#EFBE72;
+    --terra-tint:#3A2A24; --sage-tint:#26302A; --honey-tint:#38301F;
+    --on-primary:#211F1D;
+    --shadow-card:0 14px 28px -20px rgba(0,0,0,.55);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#211F1D; --ink:#EDE7DE; --card:#2A2724; --line:#3B3733; --muted:#ABA298;
+  --primary:#E68E6E; --primary-hover:#EFA084; --secondary:#9DBCA5; --sage-deep:#9DBCA5; --accent:#EFBE72;
+  --terra-tint:#3A2A24; --sage-tint:#26302A; --honey-tint:#38301F;
+  --on-primary:#211F1D;
+  --shadow-card:0 14px 28px -20px rgba(0,0,0,.55);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--ja-b); font-size:16px; line-height:1.8; -webkit-font-smoothing:antialiased}
+/* ★和文は勝手に改行位置を変えない（text-wrap:balance や ch 幅の制限は使わない） */
+h1,h2,h3{font-family:var(--ja-h); margin:0; line-height:1.4}
+p{margin:0}
+a{color:var(--primary)}
+:focus-visible{outline:2.5px solid var(--primary); outline-offset:3px}
+.wrap{max-width:960px; margin:0 auto; padding-left:max(16px, env(safe-area-inset-left, 0px)); padding-right:max(16px, env(safe-area-inset-right, 0px)); padding-block:28px 72px; display:flex; flex-direction:column; gap:44px}
+.eyebrow{font-family:var(--ja-h); font-weight:700; font-size:13px; color:var(--sage-deep); background:var(--sage-tint); border-radius:var(--r-pill); padding:3px 12px; align-self:flex-start}
+.proto{font-size:12px; color:var(--muted)}
+
+/* 導入 */
+.hero{display:flex; flex-direction:column; gap:12px}
+.hero h1{font-weight:800; font-size:clamp(28px,5vw,40px)}
+.hero .lead{font-size:16px; line-height:1.9}
+.note{background:var(--honey-tint); border-radius:var(--r-card); padding:14px 18px; font-size:14.5px; line-height:1.8}
+.note b{font-family:var(--ja-h)}
+
+/* 見出し */
+.sec{display:flex; flex-direction:column; gap:16px}
+.sec h2{font-weight:700; font-size:clamp(21px,3.6vw,26px)}
+.sec .sub{color:var(--muted); font-size:14px}
+
+/* 考え方4つ */
+.principles{display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:14px}
+.pr{background:var(--card); border:1px solid var(--line); border-radius:var(--r-card); padding:18px; display:flex; flex-direction:column; gap:8px; min-width:0}
+.pr .mark{width:40px; height:40px; border-radius:var(--r-sm); display:grid; place-items:center; background:var(--terra-tint)}
+.pr:nth-child(2) .mark{background:var(--sage-tint)}
+.pr:nth-child(3) .mark{background:var(--honey-tint)}
+.pr:nth-child(4) .mark{background:var(--sage-tint)}
+.pr .mark svg{width:24px; height:24px}
+.pr h3{font-size:17px; font-weight:700}
+.pr p{font-size:14px; line-height:1.75}
+
+/* 共通の問い */
+.qs{background:var(--card); border:1px solid var(--line); border-radius:var(--r-recipe); box-shadow:var(--shadow-card); padding:20px clamp(16px,4vw,28px); display:flex; flex-direction:column; gap:12px}
+.qs ol{margin:0; padding-left:1.5em; display:flex; flex-direction:column; gap:6px; font-family:var(--ja-h); font-weight:700; font-size:17px}
+.qs .also{font-size:14px; color:var(--muted)}
+
+/* 表（狭い画面ではカードに組み替え） */
+.tbl-wrap{overflow-x:auto}
+table{width:100%; border-collapse:separate; border-spacing:0; background:var(--card); border:1px solid var(--line); border-radius:var(--r-card); overflow:hidden; font-size:14px; line-height:1.7}
+th,td{padding:12px 14px; text-align:left; vertical-align:top; border-bottom:1px solid var(--line)}
+thead th{font-family:var(--ja-h); font-weight:700; font-size:13px; color:var(--muted); background:var(--sage-tint)}
+tbody tr:last-child td, tbody tr:last-child th{border-bottom:0}
+tbody th{font-family:var(--ja-h); font-weight:700; font-size:15px; white-space:nowrap}
+td.keep{color:var(--ink)}
+.star{color:var(--primary); font-weight:700}
+@media (max-width:760px){
+  table, thead, tbody, tr, th, td{display:block}
+  table{background:transparent; border:0; border-radius:0}
+  thead{display:none}
+  tbody{display:flex; flex-direction:column; gap:12px}
+  tr{background:var(--card); border:1px solid var(--line); border-radius:var(--r-card); overflow:hidden}
+  tbody th{background:var(--sage-tint); padding:10px 14px; border-bottom:0; white-space:normal}
+  td{border-bottom:0; padding:6px 14px}
+  td:last-child{padding-bottom:14px}
+  td::before{content:attr(data-label); display:block; font-family:var(--ja-h); font-weight:700; font-size:12px; color:var(--muted)}
+}
+
+/* 補足・別枠 */
+.callout{border-left:4px solid var(--primary); background:var(--terra-tint); border-radius:0 var(--r-card) var(--r-card) 0; padding:16px 20px; display:flex; flex-direction:column; gap:8px; font-size:14.5px}
+.callout h3{font-size:16px}
+.callout ul{margin:0; padding-left:1.2em; display:flex; flex-direction:column; gap:4px}
+.two{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:14px}
+.box{background:var(--card); border:1px solid var(--line); border-radius:var(--r-card); padding:18px; display:flex; flex-direction:column; gap:8px; font-size:14.5px; min-width:0}
+.box h3{font-size:16.5px}
+.box ul{margin:0; padding-left:1.2em; display:flex; flex-direction:column; gap:4px}
+.chips{display:flex; flex-wrap:wrap; gap:6px}
+.chips span{background:var(--sage-tint); color:var(--sage-deep); border-radius:var(--r-pill); padding:2px 11px; font-size:13px; font-weight:500}
+.misc ul{margin:0; padding-left:1.2em; display:flex; flex-direction:column; gap:8px; font-size:14.5px}
+.misc b{font-family:var(--ja-h)}
+.refs ul{margin:0; padding-left:1.2em; display:flex; flex-direction:column; gap:10px; font-size:14px; line-height:1.75}
+.refs .src{font-size:12.5px}
+.back{display:flex; justify-content:center}
+.back a{background:var(--primary); color:var(--on-primary); text-decoration:none; border-radius:var(--r-pill); padding:13px 28px; font-family:var(--ja-h); font-weight:500; font-size:15px}
+.back a:hover{background:var(--primary-hover)}
+footer{border-top:1px solid var(--line); padding-top:16px; color:var(--muted); font-size:12.5px}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="hero">
+    <span class="eyebrow">事業者の方へ</span>
+    <h1>その個人情報、本当に要りますか</h1>
+    <p class="lead">個人の設定や注意だけでは、事業者が持っている情報の漏えいは防ぎきれません。登録項目には、それぞれ追加した当時の理由があります。サービスや確認の手段が変わったいま、その項目・細かさ・残しておく期間が今も必要か、1つずつ見直してみませんか。</p>
+    <p class="note"><b>このページについて</b>　ここに挙げるのは見直しの例です。必要な情報と残しておく期間は、事業・取引・確認の方法によって違います。法律で残す必要がある記録や、問い合わせ・紛争への対応に必要な記録を確かめてから、減らし方を決めてください。</p>
+  </header>
+
+  <section class="sec" aria-labelledby="h-pr">
+    <h2 id="h-pr">4つの考え方</h2>
+    <div class="principles">
+      <article class="pr">
+        <span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="var(--primary)" stroke-width="2.4"/><path d="M6.5 17.5 L17.5 6.5" stroke="var(--primary)" stroke-width="2.4" stroke-linecap="round"/></svg></span>
+        <h3>もらわない</h3>
+        <p>使う目的を具体的に説明できない項目は、聞かない。</p>
+      </article>
+      <article class="pr">
+        <span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2.5" fill="none" stroke="var(--sage-deep)" stroke-width="2.2"/><path d="M8.5 9h7M8.5 13h7M8.5 17h4" stroke="var(--sage-deep)" stroke-width="2.2" stroke-linecap="round"/></svg></span>
+        <h3>必要がなくなったら消す</h3>
+        <p>法律で残す義務と業務上の必要を確かめて、期限を決める。</p>
+      </article>
+      <article class="pr">
+        <span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="7.5" height="14" rx="2" fill="none" stroke="var(--ink)" stroke-width="2.2"/><rect x="13" y="5" width="7.5" height="14" rx="2" fill="none" stroke="var(--ink)" stroke-width="2.2"/></svg></span>
+        <h3>分けて守る</h3>
+        <p>保存先と、見られる人・システムを絞り、一度の侵害で広がる被害を小さくする。</p>
+      </article>
+      <article class="pr">
+        <span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12.5 L10 17 L19 7" fill="none" stroke="var(--sage-deep)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <h3>少ない情報で済ませる</h3>
+        <p>確認した結果や粗い区分で、目的を満たせないか考える。</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="sec" aria-labelledby="h-q">
+    <h2 id="h-q">どの項目にも共通する問い</h2>
+    <div class="qs">
+      <ol>
+        <li>何のために、いつ必要か</li>
+        <li>聞かずに済むか、少ない情報で足りるか</li>
+        <li>何を、いつまで、どんな根拠で残すか</li>
+      </ol>
+      <p class="also">あわせて：誰が見られる必要があるか</p>
+    </div>
+  </section>
+
+  <section class="sec" aria-labelledby="h-items">
+    <h2 id="h-items">項目ごとの見直し方</h2>
+    <p class="sub">「使われる場面の例」は、よく見かける使い方を挙げたものです。</p>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th scope="col">項目</th><th scope="col">使われる場面の例</th><th scope="col">問い</th><th scope="col">少ない情報で済ませる例</th><th scope="col">残す期限の考え方</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">氏名</th><td data-label="使われる場面の例">配送・契約・問い合わせ対応・表示名</td><td data-label="問い">実名が要るか。表示名で足りないか</td><td data-label="少ない情報で済ませる例">表示名はニックネームにして、実名は配送や契約のときだけ聞く</td><td data-label="残す期限の考え方">用途がなくなったら。残す義務のある取引記録は別に考える</td></tr>
+          <tr><th scope="row">メールアドレス</th><td data-label="使われる場面の例">ログイン・連絡・パスワードの再設定</td><td data-label="問い">連絡先を、いくつも必須にしていないか</td><td data-label="少ない情報で済ませる例">連絡手段は1つだけ必須にして、ほかは任意にする</td><td data-label="残す期限の考え方">退会時に見直す。再登録の防止などで残すなら、目的と期限を決める</td></tr>
+          <tr><th scope="row">本人確認書類の画像</th><td data-label="使われる場面の例">法律による本人確認・年齢確認・資格の確認（運転免許など）・不正対策</td><td data-label="問い">何を確かめたいのか。そのために画像を残すことまで必要か</td><td data-label="少ない情報で済ませる例">ICチップの読み取りや公的個人認証を使う。法律の義務がなければ、確認した結果だけを残す</td><td data-label="残す期限の考え方">確認と記録が済んだら。<span class="star">法律で記録への添付や保存が求められる場合は、その期間</span></td></tr>
+          <tr><th scope="row">住所</th><td data-label="使われる場面の例">配送・請求・契約・利用地域の確認</td><td data-label="問い">住所全体が要るか。必要な手続きのときだけ聞けないか</td><td data-label="少ない情報で済ませる例">郵便番号や都道府県で足りないか考える</td><td data-label="残す期限の考え方">配送・返品などの対応期間が終わったら。取引記録は別に管理する</td></tr>
+          <tr><th scope="row">電話番号</th><td data-label="使われる場面の例">連絡・SMSでの確認・重複登録の防止・アカウントの復旧</td><td data-label="問い">何に使うか、用途を1つずつ言えるか</td><td data-label="少ない情報で済ませる例">ログインの確認だけが目的なら、パスキーなども考える。連絡・不正対策・復旧の用途は別に考える</td><td data-label="残す期限の考え方">用途がなくなったら。退会時にも見直す</td></tr>
+          <tr><th scope="row">生年月日</th><td data-label="使われる場面の例">年齢確認・年齢別の料金・誕生月の特典</td><td data-label="問い">年齢の条件を満たすかどうかだけで足りないか</td><td data-label="少ない情報で済ませる例">「◯歳以上か」の確認結果だけを残す。特典なら誕生月だけにする</td><td data-label="残す期限の考え方">年齢の情報や特典が要らなくなったら</td></tr>
+          <tr><th scope="row">家族の情報</th><td data-label="使われる場面の例">家族会員・家族向けの特典・見守り</td><td data-label="問い">誰の情報を、何に使うか。その家族への説明はできているか</td><td data-label="少ない情報で済ませる例">家族本人に登録してもらう。資格の確認結果だけにする</td><td data-label="残す期限の考え方">その機能をやめたら</td></tr>
+          <tr><th scope="row">クレジットカード番号</th><td data-label="使われる場面の例">決済・継続課金</td><td data-label="問い">自社のサーバーやログを、カード番号が通っていないか</td><td data-label="少ない情報で済ませる例">決済代行の画面で直接入力してもらい、自社は決済用のトークンを使う</td><td data-label="残す期限の考え方">自社では扱わない設計にする。取引記録の期限は別に決める</td></tr>
+          <tr><th scope="row">性別</th><td data-label="使われる場面の例">分析・おすすめ</td><td data-label="問い">性別を知ることで、どの判断が変わるか</td><td data-label="少ない情報で済ませる例">必要な好みを直接聞く。聞くなら目的を示して任意にする</td><td data-label="残す期限の考え方">その用途をやめたら</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout">
+      <h3>本人確認書類は「画像」と「記録」を分けて考える</h3>
+      <ul>
+        <li>レンタカーの事業者には、運転者の氏名・住所・運転免許の種類・運転免許証の番号などを記載した貸渡簿を、貸渡しの終了日から2年間以上保存する決まりがあります（<a href="https://wwwtb.mlit.go.jp/chubu/aichi/renta_koshu/junshujico_yuso.pdf" target="_blank" rel="noopener">国土交通省 中部運輸局</a>）。</li>
+        <li>犯罪収益移転防止法の対象の取引では、本人確認書類やその写しなどを確認記録に添付し（<a href="https://laws.e-gov.go.jp/law/420M60000F5A001" target="_blank" rel="noopener">施行規則 第19条</a>）、確認記録は契約が終わった日などから7年間保存する決まりがあります（<a href="https://laws.e-gov.go.jp/law/419AC0000000022" target="_blank" rel="noopener">法 第6条</a>）。</li>
+        <li>記録として残す義務があっても、画像そのものを残す義務があるとは限りません。タイムズカーは2026年10月16日、本人確認書類の画像を「登録確認完了後、即時削除」とするルールへの変更を発表しました（<a href="https://share.timescar.jp/news/2026/1016/1826.html" target="_blank" rel="noopener">第4報</a>）。</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="two" aria-label="見落としやすいところ">
+    <div class="box">
+      <h3>見落としやすい場所</h3>
+      <p>本番のデータベースだけでなく、ここにも残っていないか。</p>
+      <div class="chips"><span>CSVの書き出し</span><span>問い合わせの添付ファイル</span><span>ログ</span><span>検証用の環境</span><span>委託先</span><span>バックアップ</span></div>
+      <ul>
+        <li>バックアップから戻したときに、消したはずのデータが復活しないか</li>
+        <li>委託先で消されたことを、確かめられるか</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h3>フォーム以外で集まる情報</h3>
+      <p>自動で集まり、たまっていく情報も、同じ3つの問いで見直します。</p>
+      <div class="chips"><span>位置情報</span><span>利用履歴</span><span>端末の情報</span><span>問い合わせの内容</span></div>
+    </div>
+  </section>
+
+  <section class="sec misc" aria-labelledby="h-misc">
+    <h2 id="h-misc">誤解されやすいところ</h2>
+    <ul>
+      <li><b>同意を取れば何でも集めてよい、わけではありません。</b>逆に、すべての取得に同意が要るわけでもありません。目的の特定・通知、要配慮個人情報、第三者への提供などは、別々に判断します。</li>
+      <li><b>IDに置き換えても、照合できるなら個人情報のままです。</b></li>
+      <li><b>公的個人認証を使うことと、マイナンバー（12桁の番号）を集めることは別です。</b></li>
+      <li><b>漏えいが起きたときに、急いで消すのは別の話です。</b>事故の調査や報告に要る記録は、担当者と確かめてから扱います。</li>
+    </ul>
+  </section>
+
+  <section class="sec refs" aria-labelledby="h-refs">
+    <h2 id="h-refs">参考になる決まり</h2>
+    <ul>
+      <li><b>個人情報保護法 第22条</b>：利用する必要がなくなった個人データは、遅滞なく消去するよう努めなければならない（努力義務）。ガイドラインでは、法令で保存期間が決まっている場合は、この限りではないとされています。<br><a class="src" href="https://laws.e-gov.go.jp/law/415AC0000000057" target="_blank" rel="noopener">e-Govの法令検索</a>・<a class="src" href="https://www.ppc.go.jp/personalinfo/legal/guidelines_tsusoku/" target="_blank" rel="noopener">個人情報保護委員会 ガイドライン（通則編）</a></li>
+      <li><b>個人情報保護委員会の注意喚起（2026年10月7日）</b>：事業者に、安全管理措置の点検と、保存の根拠を確かめたうえでの不要な個人データの消去を呼びかけました。<br><a class="src" href="https://www.ppc.go.jp/news/press/2026/261007_houdou/" target="_blank" rel="noopener">個人情報保護委員会</a></li>
+      <li><b>犯罪収益移転防止法 施行規則の改正（2027年4月1日施行）</b>：対象の業務・取引では、本人確認書類の画像と顔の画像を送ってもらう今の方法などがなくなります。ICチップの情報と顔の画像を組み合わせる方法などは残ります。カーシェアや飲食店の会員サービスであること自体は、この法律の対象になる理由にはなりません。<br><a class="src" href="https://www.npa.go.jp/sosikihanzai/jafic/hourei/hotop.htm" target="_blank" rel="noopener">警察庁</a></li>
+      <li><b>携帯電話不正利用防止法</b>：非対面で、本人確認書類の画像と顔の画像を送って確認する方法は、2026年4月1日に廃止されました。<br><a class="src" href="https://www.soumu.go.jp/menu_news/s-news/01kiban18_01000247.html" target="_blank" rel="noopener">総務省</a></li>
+    </ul>
+  </section>
+
+  <div class="back"><a href="./">2分セキュリティ診断へ</a></div>
+
+  <footer>法律の解説ではなく、見直しのきっかけとしてまとめたものです。個別の判断は、専門家や所管の官公庁にご確認ください。</footer>
+</div>
+
+</body>
+</html>

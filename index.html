@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>2分セキュリティ診断</title>
+<meta name="description" content="9つの問いに答えると、パスワードやメールアドレスの守り方で、どこから手をつければいいかが分かります。">
+<meta property="og:title" content="2分セキュリティ診断">
+<meta property="og:description" content="9つの問いに答えると、パスワードやメールアドレスの守り方で、どこから手をつければいいかが分かります。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://mikiyoko.github.io/security-checkup/">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=M+PLUS+1p:wght@500;700;800&family=Noto+Sans+JP:wght@400;500&family=Poppins:wght@600&display=swap">
+<style>
+/* 色・書体・角丸は、ライフテックコーディネーターのデザインルールに沿う。
+   ダークモードの色は、地と文字を反転させて派生させた。
+   レイアウト：1列の読み物。問いは1問ずつ、結果は「点数 → 2本の棒 → 今日の1つ → カード9枚」の順。 */
+:root{
+  --bg:#FBF7F1; --ink:#3D3A36; --card:#FFFFFF; --line:#EAE3D8; --muted:#736B61;
+  --primary:#DC7C5C; --primary-hover:#cf6e4d; --secondary:#8FAE97; --sage-deep:#5F8069; --accent:#E8B05C;
+  --terra-tint:#FBEEE8; --sage-tint:#E9F0EB; --honey-tint:#FBF0DB;
+  --on-primary:#FFFFFF;
+  --r-sm:11px; --r-card:16px; --r-recipe:22px; --r-cta:28px; --r-pill:999px;
+  --shadow-card:0 14px 28px -18px rgba(61,58,54,.28);
+  --ja-h:"M PLUS 1p",system-ui,-apple-system,"Hiragino Kaku Gothic ProN",sans-serif;
+  --ja-b:"Noto Sans JP",system-ui,-apple-system,"Hiragino Kaku Gothic ProN",sans-serif;
+  --en-h:"Poppins",system-ui,sans-serif;
+  --t:.22s;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#211F1D; --ink:#EDE7DE; --card:#2A2724; --line:#3B3733; --muted:#ABA298;
+    --primary:#E68E6E; --primary-hover:#EFA084; --secondary:#9DBCA5; --sage-deep:#9DBCA5; --accent:#EFBE72;
+    --terra-tint:#3A2A24; --sage-tint:#26302A; --honey-tint:#38301F;
+    --on-primary:#211F1D;
+    --shadow-card:0 14px 28px -20px rgba(0,0,0,.55);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#211F1D; --ink:#EDE7DE; --card:#2A2724; --line:#3B3733; --muted:#ABA298;
+  --primary:#E68E6E; --primary-hover:#EFA084; --secondary:#9DBCA5; --sage-deep:#9DBCA5; --accent:#EFBE72;
+  --terra-tint:#3A2A24; --sage-tint:#26302A; --honey-tint:#38301F;
+  --on-primary:#211F1D;
+  --shadow-card:0 14px 28px -20px rgba(0,0,0,.55);
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:var(--ja-b); font-size:16px; line-height:1.8;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{
+  max-width:760px; margin:0 auto;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));
+  padding-right:max(16px, env(safe-area-inset-right, 0px));
+  padding-block:28px 72px;
+}
+h1,h2,h3{font-family:var(--ja-h); margin:0; line-height:1.4}
+/* ★和文は勝手に改行位置を変えない（text-wrap:balance や ch 幅の制限は、横幅に合わない位置で折り返すため使わない） */
+p{margin:0}
+.eyebrow{font-family:var(--en-h); font-weight:600; font-size:11.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--secondary)}
+.num{font-family:var(--en-h); font-variant-numeric:tabular-nums}
+button{font:inherit; color:inherit}
+:focus-visible{outline:2.5px solid var(--primary); outline-offset:3px}
+
+/* ── ヘッダ ── */
+.top{display:flex; flex-direction:column; gap:8px; margin-bottom:22px}
+.top h1{font-weight:800; font-size:clamp(28px,5vw,40px)}
+.top .lead{color:var(--muted); font-size:14.5px; line-height:1.75}
+.proto{
+  align-self:flex-start; font-size:12px; color:var(--sage-deep); background:var(--sage-tint);
+  border-radius:var(--r-pill); padding:3px 12px;
+}
+
+/* ── 問い ── */
+.quiz{background:var(--card); border:1px solid var(--line); border-radius:var(--r-recipe); box-shadow:var(--shadow-card); padding:22px clamp(16px,4vw,30px) 24px}
+.progress{display:flex; align-items:center; gap:12px; margin-bottom:16px}
+.dots{display:flex; gap:5px; flex:1; min-width:0}
+.dots i{flex:1; height:6px; border-radius:var(--r-pill); background:var(--line); transition:background var(--t)}
+.dots i.done{background:var(--secondary)}
+.dots i.now{background:var(--primary)}
+.progress .count{font-size:13px; color:var(--muted); white-space:nowrap}
+.axis-tag{display:inline-block; font-size:12px; font-weight:500; color:var(--primary); background:var(--terra-tint); border-radius:var(--r-pill); padding:2px 11px; margin-bottom:10px}
+.axis-tag.b{color:var(--sage-deep); background:var(--sage-tint)}
+.q-title{font-weight:700; font-size:clamp(19px,3.4vw,23px); margin-bottom:12px}
+.help{background:var(--honey-tint); border-radius:var(--r-card); padding:12px 16px; font-size:14px; line-height:1.75; margin-bottom:16px}
+.help ul{margin:6px 0 0; padding-left:1.2em}
+.opts{display:flex; flex-direction:column; gap:10px}
+.opt{
+  display:flex; align-items:center; gap:14px; width:100%; text-align:left; cursor:pointer;
+  background:var(--card); border:1.5px solid var(--line); border-radius:var(--r-card);
+  padding:13px 16px; font-size:15.5px; line-height:1.6;
+  transition:border-color var(--t), background var(--t), transform var(--t);
+}
+.opt:hover{border-color:var(--primary); background:var(--terra-tint)}
+.opt[aria-pressed="true"]{border-color:var(--primary); background:var(--terra-tint)}
+.opt .mark{flex:none; width:20px; height:20px; border-radius:50%; border:2px solid var(--line); display:grid; place-items:center}
+.opt[aria-pressed="true"] .mark{border-color:var(--primary)}
+.opt[aria-pressed="true"] .mark::after{content:""; width:10px; height:10px; border-radius:50%; background:var(--primary)}
+.nav{display:flex; justify-content:space-between; align-items:center; margin-top:18px; gap:12px}
+.ghost{background:transparent; border:1.5px solid var(--line); color:var(--muted); border-radius:var(--r-pill); padding:9px 20px; cursor:pointer; font-family:var(--ja-h); font-weight:500; font-size:14px}
+.ghost:hover{border-color:var(--primary); color:var(--primary)}
+.ghost[disabled]{opacity:.4; cursor:default}
+.primary{background:var(--primary); color:var(--on-primary); border:0; border-radius:var(--r-pill); padding:13px 28px; cursor:pointer; font-family:var(--ja-h); font-weight:500; font-size:15px; transition:background var(--t), transform var(--t)}
+.primary:hover{background:var(--primary-hover); transform:translateY(-1px)}
+.skip-link{background:none; border:0; color:var(--muted); text-decoration:underline; cursor:pointer; font-size:13.5px; padding:4px}
+
+/* ── 結果 ── */
+.result{display:flex; flex-direction:column; gap:28px}
+.score-box{background:var(--card); border:1px solid var(--line); border-radius:var(--r-recipe); box-shadow:var(--shadow-card); padding:24px clamp(16px,4vw,30px); display:flex; flex-direction:column; gap:16px}
+.score-row{display:flex; align-items:baseline; gap:14px; flex-wrap:wrap}
+.score{font-family:var(--en-h); font-weight:600; font-size:clamp(48px,11vw,64px); line-height:1; color:var(--primary)}
+.score small{font-size:.36em; color:var(--muted); margin-left:4px}
+.band{font-family:var(--ja-h); font-weight:800; font-size:clamp(21px,4vw,26px)}
+.band-msg{font-size:15px; line-height:1.85}
+details.help{padding:0; background:transparent}
+details.help summary{cursor:pointer; color:var(--sage-deep); font-size:13.5px; font-weight:500; list-style:none}
+details.help summary::-webkit-details-marker{display:none}
+details.help summary::before{content:"＋ "}
+details.help[open] summary::before{content:"－ "}
+details.help .inner{background:var(--honey-tint); border-radius:var(--r-card); padding:10px 14px; margin-top:6px}
+.chips{display:flex; flex-wrap:wrap; gap:6px; margin-top:6px}
+.chips span{background:var(--card); border-radius:var(--r-pill); padding:2px 11px; font-size:13px}
+.card .more, .today .more{font-size:13px; color:var(--primary); text-decoration:underline}
+.bars{display:flex; flex-direction:column; gap:12px}
+.bar-row{display:grid; grid-template-columns:minmax(0,9.5em) 1fr auto; gap:12px; align-items:center; font-size:14px}
+.track{height:12px; border-radius:var(--r-pill); background:var(--line); overflow:hidden}
+.fill{height:100%; border-radius:var(--r-pill); background:var(--primary)}
+.fill.b{background:var(--secondary)}
+.today{background:var(--terra-tint); border-radius:var(--r-cta); padding:22px clamp(16px,4vw,30px); display:flex; flex-direction:column; gap:8px}
+.today .label{font-family:var(--ja-h); font-weight:700; font-size:13.5px; color:var(--primary)}
+.today h2{font-size:clamp(21px,4vw,27px); font-weight:800}
+.today ol{margin:4px 0 0; padding-left:1.4em; display:flex; flex-direction:column; gap:4px}
+.today.big h2{font-size:clamp(24px,5vw,32px)}
+.missing{display:flex; flex-wrap:wrap; gap:8px}
+.missing span{font-size:13px; background:var(--card); border:1px solid var(--line); border-radius:var(--r-pill); padding:3px 12px}
+.sec-head{display:flex; flex-direction:column; gap:4px}
+.sec-head h2{font-size:clamp(20px,3.6vw,24px); font-weight:700}
+.sec-head p{font-size:14px; color:var(--muted)}
+
+/* ── カード ── */
+.cards{display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:14px}
+.card{
+  position:relative; background:var(--card); border:1px solid var(--line); border-radius:var(--r-card);
+  display:flex; flex-direction:column; min-width:0; overflow:hidden;
+  transition:transform var(--t), box-shadow var(--t);
+}
+.card:hover{transform:translateY(-4px); box-shadow:var(--shadow-card)}
+.card.weak{border-color:var(--primary)}
+.card .fig{background:var(--sage-tint); aspect-ratio:16/10; max-width:100%; display:grid; place-items:center}
+.card.weak .fig{background:var(--terra-tint)}
+.card .fig svg{width:78%; height:auto; max-height:100%}
+.card .body{padding:14px 16px 16px; display:flex; flex-direction:column; gap:8px; flex:1}
+.card .meta{display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-size:12px; color:var(--muted)}
+.flag{align-self:flex-start; font-size:11.5px; font-weight:700; color:var(--on-primary); background:var(--primary); border-radius:var(--r-pill); padding:1px 9px}
+.flag.ok{color:var(--sage-deep); background:var(--sage-tint); font-weight:500}
+.card h3{font-size:16.5px; font-weight:700}
+.card .back{display:flex; flex-direction:column; gap:8px; font-size:14px; line-height:1.7}
+.card .back ol{margin:0; padding-left:1.3em}
+.card .now{font-size:13px; background:var(--honey-tint); border-radius:var(--r-sm); padding:6px 10px}
+.card .now b{font-family:var(--ja-h); font-weight:700; margin-right:6px}
+.card .flip{
+  margin-top:auto; align-self:flex-start; background:transparent; border:1.5px solid var(--primary); color:var(--primary);
+  border-radius:var(--r-pill); padding:6px 16px; cursor:pointer; font-family:var(--ja-h); font-weight:500; font-size:13.5px;
+}
+.card .flip:hover{background:var(--terra-tint)}
+.restart{align-self:center}
+footer{margin-top:44px; padding-top:18px; border-top:1px solid var(--line); color:var(--muted); font-size:12.5px; line-height:1.8}
+
+/* 図の色（SVGはトークンから塗る） */
+.s-ink{stroke:var(--ink); fill:none; stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round}
+.s-mut{stroke:var(--muted); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round}
+.f-pri{fill:var(--primary)} .f-sec{fill:var(--secondary)} .f-acc{fill:var(--accent)} .f-card{fill:var(--card)} .f-line{fill:var(--line)}
+.s-pri{stroke:var(--primary); fill:none; stroke-width:2.6; stroke-linecap:round; stroke-linejoin:round}
+.s-sec{stroke:var(--sage-deep); fill:none; stroke-width:2.6; stroke-linecap:round; stroke-linejoin:round}
+.t-svg{font-family:var(--ja-h); font-weight:700; fill:var(--ink)}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important; animation:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <span class="proto">答えはこのページの中だけで計算します。どこにも送りません</span>
+    <h1>2分セキュリティ診断</h1>
+    <p class="lead">9つの問いに答えると、どこから手をつければいいかが分かります。</p>
+  </header>
+
+  <main id="app"></main>
+
+  <footer>
+    サービスから漏れた情報は防げなくても、次々に乗っ取られるのは自分で止められます。<br>
+    事業者の方へ：<a href="business.html" style="color:var(--primary)">その個人情報、本当に要りますか</a>
+  </footer>
+</div>
+
+<script>
+/* ── 問い ── */
+const AXES = {a:"戸締まり", b:"もしもの備え"};
+const BLOG = "";   // 解説記事を公開したら入れる。空のあいだはリンクを出さない
+const ASK_AGE = false;   // 答えを集める仕組みをつなぐまでは、年代を聞かない
+const Q = [
+  {id:1, axis:"a", title:"パスワードの種類について、いちばん近いものはどれですか",
+   opts:[["基本的に、サービスごとにちがうパスワードにしている",2],["大事なサービスだけ、ちがうパスワードにしている",1],["同じパスワードを、いくつものサービスで使っている",0]]},
+  {id:2, axis:"a", title:"パスワードは、何で管理していますか", sub:"いちばん近いものを1つ選んでください",
+   opts:[["パスワード管理アプリや、iPhone・パソコン・ブラウザのパスワード機能",2],["パソコンやスマホのメモ帳・表計算など（専用ではないアプリ）",1],["紙の手帳やノート",1],["頭で覚えている",1]]},
+  {id:3, axis:"a", title:"ふだんいちばん使っているメールアドレスに、パスワードのほかに、もう1つの確認を設定していますか",
+   examples:["顔や指紋でログイン","SMSやメールで届く数字","認証アプリに出る数字"],
+   help:"「いちばん使っている」は、やりとりでも登録でも、多く使っているほうで。顔や指紋のログインは「パスキー」、認証アプリはGoogle Authenticatorなどです。",
+   opts:[["設定している",2],["わからない",1],["設定していない（パスワードだけ）",0]]},
+  {id:4, axis:"a", title:"「パスキー」を知っていますか",
+   opts:[["知っていて、使っている",2],["知っているが、使っていない",1],["知らない",0]]},
+  {id:5, axis:"a", title:"「アカウントが止まります」というメールやSMSが届いたら、どうしますか",
+   help:"「お支払い情報を確認してください」なども同じです。自分でログインしようとして届いたメールは含みません。",
+   opts:[["リンクは押さず、公式アプリやブックマークから自分で確かめる",2],["差出人やURLを見て、本物らしければリンクから入る",1],["そのままリンクから入る",0]]},
+  {id:6, axis:"b", title:"サービスに登録するとき、メールアドレスはいくつ使い分けていますか",
+   help:"「メールを非公開」やエイリアスなど、自動で作るアドレスも数に入れます。",
+   opts:[["ほぼサービスごとに、別々のアドレスを使っている",2],["いくつかのアドレスを使い分けている（ふだん用と登録用、など）",1],["ほとんど1つのアドレスで登録している",0]]},
+  {id:7, axis:"b", title:"「Googleでログイン」のように、ほかのサービスのアカウントで登録やログインをしますか",
+   help:"新しいIDやパスワードを作らずに、GoogleやApple、LINEなどのアカウントで入る方法です。",
+   opts:[["ほとんど使わない",2],["使う。そのアカウントにも「もう1つの確認」を設定している",2],["使う。そのアカウントはパスワードだけ／わからない",0]]},
+  {id:8, axis:"b", title:"パスワードが漏れていないか、確かめたことはありますか",
+   help:"パスワード管理アプリやiPhoneの「パスワード」アプリの警告、漏洩を調べるサイトなどで確かめられます。",
+   opts:[["定期的に確かめている",2],["確かめたことはある",1],["ない",0]]},
+  {id:9, axis:"b", title:"クレジットカードが勝手に使われたら、すぐ気づけますか",
+   help:"カード会社のアプリやメールの利用通知などです。",
+   opts:[["利用通知を受け取っている",2],["明細はときどき見ている",1],["ほとんど見ていない",0]]},
+];
+const AGE = ["10代","20代","30代","40代","50代","60代","70代以上","答えない"];
+
+/* ── カード ── */
+const C = {
+  1:{name:"使い回し", head:"1か所漏れると、全部開く", desc:"同じパスワードを使い回していると、1つのサービスから漏れたパスワードで、ほかのサービスにも次々にログインされてしまいます。", now:"パスワードは覚えずに、パスワード管理アプリ（パスワードを作って、覚えておいてくれるアプリ）に作らせる"},
+  2:{name:"管理方法", head:"頭で覚えない。アプリに覚えさせる", desc:"頭で覚えようとすると、短く、似たパスワードになりがちです。メモや紙は、人に見られたり、なくしたりするおそれがあります。", now:"スマホやパソコン、ブラウザに、パスワードを覚えておく機能が無料で入っている"},
+  3:{name:"メールのもう1つの確認", head:"メールを取られると、全部取られる", desc:"パスワードの再設定の案内は、メールに届きます。メールに入られると、ほかのサービスのパスワードまで変えられてしまいます。GmailならGoogleアカウント、iCloudメールならApple Accountの設定で、パスワードのほかの確認をオンにしておきます。", now:"SMSで届く数字より、顔や指紋（パスキー）や認証アプリのほうが安全"},
+  4:{name:"パスキー", head:"パスワードを入れない。だから盗まれにくい", desc:"パスキーは、パスワードの代わりに顔や指紋でログインする仕組みです。多くのサービスでは、パスキーを足してもパスワードは残るので、パスワードの管理もあわせて続けます。", now:"本物のサイトでしか使えないので、偽のサイトに誘導されても使われない"},
+  5:{name:"届いた知らせ", head:"AIで、見分けがつかなくなった", desc:"「アカウントが止まります」などの知らせのリンクから、本物そっくりの偽のサイトに誘導される手口があります。リンクは押さず、公式アプリやブックマークから自分で確かめます。", now:"日本語の不自然さでは、もう見抜けない"},
+  6:{name:"登録用のメール", head:"漏れても、ほかとつながらない", desc:"登録に使うメールアドレスを、ふだんのやりとりに使うものと分けておくと、どこかから漏れても、ほかのサービスと結びつけられにくくなります。ただし、届く先が1つの受信箱なら、そこは守っておきます。", now:"サービスごとに、使い捨てのアドレスを作れる"},
+  7:{name:"ほかのサービスのアカウント", head:"便利。ただ、もとのアカウントが1か所の弱点", desc:"「Googleでログイン」「Appleでサインイン」「LINEでログイン」などを使うと、パスワードを増やさずに済みます。その代わり、もとのアカウントが乗っ取られたり使えなくなったりすると、つながっているサービスにも影響します。", now:"ログインや再設定に使うアカウントほど、固く守る"},
+  8:{name:"漏洩の確認", head:"漏れたかどうかは、自分では気づけない", desc:"漏れたパスワードは、知らないうちに使われることがあります。パスワード管理アプリなどの警告の機能を使うと、漏れたものや使い回しを教えてくれます。", now:"アプリが自動で教えてくれる"},
+  9:{name:"カードの利用通知", head:"使われたら、すぐ気づく", desc:"カード会社の利用通知をオンにしておくと、身に覚えのない利用にすぐ気づけます。気づいたら、カード会社に連絡して止めてもらいます。", now:"利用通知はアプリやメールですぐ届く"},
+};
+const PRIORITY = [3,1,2,5,6,8,9,4,7];
+
+/* ── 図（1問＝1枚。色はCSSのトークンから） ── */
+const door = (x,y,open,cls) => `<rect x="${x}" y="${y}" width="22" height="34" rx="3" class="${open?'f-pri':'f-card'}" /><rect x="${x}" y="${y}" width="22" height="34" rx="3" class="${cls||'s-ink'}"/><circle cx="${x+17}" cy="${y+18}" r="1.8" class="${open?'f-card':'f-pri'}"/>`;
+const key = (x,y,cls) => `<g transform="translate(${x} ${y})"><circle cx="0" cy="0" r="8" class="${cls}"/><path d="M8 0 H30 M22 0 v6 M27 0 v5" class="${cls}"/></g>`;
+const FIG = {
+  1:`<svg viewBox="0 0 200 110" role="img" aria-label="鍵1本で、ドアが5つ次々に開く">${key(20,55,'s-pri')}<path d="M54 55 H66" class="s-mut"/>${[70,96,122,148,174].map((x,i)=>door(x-4,38,true)).join('')}<path d="M60 92 C 100 104, 140 104, 186 92" class="s-mut" stroke-dasharray="4 5"/></svg>`,
+  2:`<svg viewBox="0 0 200 110" role="img" aria-label="頭・紙・アプリの3つ"><circle cx="38" cy="46" r="20" class="s-ink"/><path d="M28 74 q10 8 20 0" class="s-ink"/><text x="38" y="100" text-anchor="middle" font-size="11" class="t-svg">頭</text><rect x="82" y="26" width="36" height="46" rx="3" class="s-ink"/><path d="M89 38 h22 M89 47 h22 M89 56 h14" class="s-mut"/><text x="100" y="100" text-anchor="middle" font-size="11" class="t-svg">紙・メモ</text><rect x="146" y="20" width="34" height="58" rx="7" class="f-sec"/><rect x="146" y="20" width="34" height="58" rx="7" class="s-sec"/><rect x="156" y="44" width="14" height="12" rx="2" class="f-card"/><path d="M159 44 v-4 a4 4 0 0 1 8 0 v4" class="s-ink"/><text x="163" y="100" text-anchor="middle" font-size="11" class="t-svg">アプリ</text></svg>`,
+  3:`<svg viewBox="0 0 200 110" role="img" aria-label="メールが合鍵の置き場所になっている"><rect x="66" y="30" width="68" height="46" rx="5" class="f-card"/><rect x="66" y="30" width="68" height="46" rx="5" class="s-ink"/><path d="M66 32 L100 58 L134 32" class="s-ink"/>${key(92,62,'s-pri')}<path d="M138 46 L168 26 M138 54 H172 M138 62 L168 82" class="s-mut"/><circle cx="172" cy="24" r="5" class="f-pri"/><circle cx="176" cy="54" r="5" class="f-pri"/><circle cx="172" cy="84" r="5" class="f-pri"/><path d="M62 54 H30" class="s-pri" stroke-dasharray="4 4"/><text x="28" y="44" text-anchor="middle" font-size="18" class="t-svg">!</text></svg>`,
+  4:`<svg viewBox="0 0 200 110" role="img" aria-label="鍵穴の代わりに指紋"><rect x="62" y="14" width="76" height="82" rx="10" class="f-card"/><rect x="62" y="14" width="76" height="82" rx="10" class="s-ink"/><g class="s-sec"><path d="M100 36 a19 19 0 0 1 19 19 v6"/><path d="M81 61 v-6 a19 19 0 0 1 10 -16.5"/><path d="M100 44 a11 11 0 0 1 11 11 v10"/><path d="M89 66 v-11 a11 11 0 0 1 4 -8.5"/><path d="M100 52 a3 3 0 0 1 3 3 v14"/><path d="M97 72 v-17"/></g></svg>`,
+  5:`<svg viewBox="0 0 200 110" role="img" aria-label="本物と偽物の画面が見分けられない">${[34,112].map(x=>`<rect x="${x}" y="14" width="54" height="80" rx="8" class="f-card"/><rect x="${x}" y="14" width="54" height="80" rx="8" class="s-ink"/><rect x="${x+9}" y="28" width="36" height="8" rx="2" class="f-line"/><rect x="${x+9}" y="44" width="36" height="8" rx="2" class="f-line"/><rect x="${x+9}" y="64" width="36" height="12" rx="6" class="f-pri"/>`).join('')}<text x="100" y="62" text-anchor="middle" font-size="20" class="t-svg">?</text></svg>`,
+  6:`<svg viewBox="0 0 200 110" role="img" aria-label="1つの受信箱から、サービスごとの封筒へ"><rect x="16" y="36" width="50" height="38" rx="5" class="s-ink"/><path d="M16 38 L41 58 L66 38" class="s-ink"/><path d="M74 55 H100" class="s-pri"/><path d="M94 49 L100 55 L94 61" class="s-pri"/>${[[112,18,'f-pri'],[150,18,'f-sec'],[112,62,'f-acc'],[150,62,'f-sec']].map(([x,y,c])=>`<rect x="${x}" y="${y}" width="32" height="24" rx="4" class="${c}"/><path d="M${x} ${y+2} L${x+16} ${y+14} L${x+32} ${y+2}" class="s-ink" stroke-width="1.8"/>`).join('')}</svg>`,
+  7:`<svg viewBox="0 0 200 110" role="img" aria-label="もとの鍵1本から、ドアが何枚も開く">${key(28,55,'s-pri')}<path d="M62 55 C 90 55, 92 22, 120 22 M62 55 C 90 55, 92 47, 120 47 M62 55 C 90 55, 92 72, 120 72 M62 55 C 90 55, 92 97, 120 97" class="s-mut"/>${[[124,10],[150,35],[124,60],[150,82]].map(([x,y])=>`<rect x="${x}" y="${y}" width="18" height="24" rx="3" class="f-pri"/><rect x="${x}" y="${y}" width="18" height="24" rx="3" class="s-ink" stroke-width="1.8"/>`).join('')}</svg>`,
+  8:`<svg viewBox="0 0 200 110" role="img" aria-label="警告ランプが点く"><path d="M100 16 L146 92 H54 Z" class="f-acc"/><path d="M100 16 L146 92 H54 Z" class="s-ink"/><path d="M100 42 V66" class="s-ink" stroke-width="5"/><circle cx="100" cy="78" r="3.2" class="f-pri"/><path d="M40 30 l-10 -8 M160 30 l10 -8 M34 56 h-12 M166 56 h12" class="s-pri"/></svg>`,
+  9:`<svg viewBox="0 0 200 110" role="img" aria-label="スマホに3,980円の利用通知"><rect x="64" y="8" width="72" height="96" rx="11" class="f-card"/><rect x="64" y="8" width="72" height="96" rx="11" class="s-ink"/><rect x="58" y="30" width="84" height="32" rx="8" class="f-pri"/><text x="100" y="44" text-anchor="middle" font-size="9" class="t-svg" style="fill:var(--on-primary)">カードのご利用</text><text x="100" y="56" text-anchor="middle" font-size="11" class="t-svg" style="fill:var(--on-primary)">¥3,980</text><rect x="76" y="72" width="48" height="6" rx="3" class="f-line"/><rect x="76" y="84" width="34" height="6" rx="3" class="f-line"/></svg>`,
+};
+
+/* ── 状態 ── */
+const S = {step:0, ans:{}, age:null, flipped:new Set()};
+const app = document.getElementById("app");
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function render(){
+  if (S.step < Q.length) return renderQ();
+  if (S.step === Q.length && ASK_AGE) return renderAge();
+  renderResult();
+}
+
+function dotsHTML(){
+  const total = Q.length + (ASK_AGE ? 1 : 0);
+  return `<div class="progress"><div class="dots" aria-hidden="true">${
+    Array.from({length:total},(_,i)=>`<i class="${i<S.step?'done':i===S.step?'now':''}"></i>`).join('')
+  }</div><span class="count num">${Math.min(S.step+1,total)} / ${total}</span></div>`;
+}
+
+function renderQ(){
+  const q = Q[S.step], picked = S.ans[q.id];
+  app.innerHTML = `<section class="quiz" aria-labelledby="qt">
+    ${dotsHTML()}
+    <span class="axis-tag ${q.axis}">${AXES[q.axis]}</span>
+    <h2 class="q-title" id="qt">Q${q.id}. ${esc(q.title)}</h2>
+    ${q.sub?`<p class="help" style="background:transparent;padding:0;color:var(--muted)">${esc(q.sub)}</p>`:''}
+    ${q.examples?`<div class="help"><span style="font-size:13.5px">「もう1つの確認」とは</span><div class="chips">${q.examples.map(e=>`<span>${esc(e)}</span>`).join('')}</div></div>`:''}
+    ${q.help?`<details class="help" id="help${q.id}"><summary>くわしく</summary><div class="inner">${esc(q.help)}</div></details>`:''}
+    <div class="opts" role="group" aria-label="選択肢">
+      ${q.opts.map(([label],i)=>`<button type="button" class="opt" id="q${q.id}o${i}" data-i="${i}" aria-pressed="${picked===i}"><span class="mark"></span><span>${esc(label)}</span></button>`).join('')}
+    </div>
+    <div class="nav">
+      <button type="button" class="ghost" id="back" ${S.step===0?'disabled':''}>もどる</button>
+      ${S.step===0?`<button type="button" class="skip-link" id="peek">おすすめの対策を先に見る</button>`:''}
+    </div>
+  </section>`;
+  app.querySelectorAll(".opt").forEach(b => b.onclick = () => {
+    S.ans[q.id] = Number(b.dataset.i);
+    b.setAttribute("aria-pressed","true");
+    setTimeout(()=>{ S.step++; render(); scrollTop(); }, 160);
+  });
+  app.querySelector("#back").onclick = () => { if (S.step>0){ S.step--; render(); } };
+  const peek = app.querySelector("#peek");
+  if (peek) peek.onclick = () => { S.step = Q.length + 1; S.peek = true; render(); scrollTop(); };
+}
+
+function renderAge(){
+  app.innerHTML = `<section class="quiz" aria-labelledby="qt">
+    ${dotsHTML()}
+    <span class="axis-tag b" style="background:var(--honey-tint);color:var(--ink)">点数には入りません</span>
+    <h2 class="q-title" id="qt">さいごに、あなたの年代は</h2>
+    <p class="help" style="background:transparent;padding:0;color:var(--muted)">年代ごとの違いを見るためだけに使います。名前やメールアドレスは聞きません。</p>
+    <div class="opts" role="group" aria-label="年代" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr))">
+      ${AGE.map((a,i)=>`<button type="button" class="opt" id="age${i}" data-i="${i}" aria-pressed="${S.age===i}"><span class="mark"></span><span>${a}</span></button>`).join('')}
+    </div>
+    <div class="nav"><button type="button" class="ghost" id="back">もどる</button></div>
+  </section>`;
+  app.querySelectorAll(".opt").forEach(b => b.onclick = () => {
+    S.age = Number(b.dataset.i); b.setAttribute("aria-pressed","true");
+    setTimeout(()=>{ S.step++; S.peek=false; render(); scrollTop(); }, 160);
+  });
+  app.querySelector("#back").onclick = () => { S.step--; render(); };
+}
+
+function pts(id){ const q = Q.find(x=>x.id===id); const i = S.ans[id]; return i==null ? 0 : q.opts[i][1]; }
+
+function band(total){
+  if (total === 18) return {name:"パーフェクト", msg:"それでも手口は毎年変わります。引き続き気を配っていきましょう。"};
+  if (total >= 16) return {name:"かなり意識が高い", msg:"ここまでできている人は多くありません。引き続き気を配っていきましょう。"};
+  if (total >= 10) return {name:"あと少し", msg:"全部を一度にやらなくて大丈夫です。"};
+  return {name:"今日から1つずつ", msg:"いちばん効くものを1つだけ選びました。"};
+}
+
+function cardHTML(id, weak, showFlag){
+  const c = C[id], open = S.flipped.has(id);
+  return `<article class="card ${weak?'weak':''}" aria-labelledby="c${id}">
+    <div class="fig">${FIG[id]}</div>
+    <div class="body">
+      ${showFlag?(weak?'<span class="flag">ここが注意</span>':'<span class="flag ok">できている</span>'):''}
+      <div class="meta"><span class="num">Q${id}</span><span>${esc(c.name)}</span></div>
+      <h3 id="c${id}">${esc(c.head)}</h3>
+      ${open?`<div class="back">
+        <p>${esc(c.desc)}</p>
+        <p class="now"><b>いまは</b>${esc(c.now)}</p>
+        ${BLOG?`<a class="more" href="${BLOG}" target="_blank" rel="noopener">設定のしかたをブログで見る</a>`:''}
+      </div>`:''}
+      <button type="button" class="flip" id="flip${id}" data-id="${id}" aria-expanded="${open}">${open?'とじる':'やり方を見る'}</button>
+    </div>
+  </article>`;
+}
+
+function renderResult(){
+  const peek = S.peek;
+  const a = Q.filter(q=>q.axis==="a").reduce((s,q)=>s+pts(q.id),0);
+  const b = Q.filter(q=>q.axis==="b").reduce((s,q)=>s+pts(q.id),0);
+  const total = a + b, bd = band(total);
+  const weakIds = PRIORITY.filter(id => pts(id) < 2);
+  const first = weakIds[0];
+  const order = peek ? [1,2,3,4,5,6,7,8,9] : [...weakIds, ...[1,2,3,4,5,6,7,8,9].filter(id=>!weakIds.includes(id))];
+  const low = total < 10;
+
+  app.innerHTML = `<div class="result">
+    ${peek ? `<section class="sec-head"><h2>おすすめの対策</h2><p>気になるものから、めくってみてください。</p></section>` : `
+    <section class="score-box" aria-label="結果">
+      <div class="score-row"><span class="score num">${total}<small>/ 18</small></span><span class="band">${bd.name}</span></div>
+      <p class="band-msg">${bd.msg}</p>
+      <div class="bars">
+        <div class="bar-row"><span>${AXES.a}</span><span class="track"><span class="fill" style="display:block;width:${a/10*100}%"></span></span><span class="num">${a}/10</span></div>
+        <div class="bar-row"><span>${AXES.b}</span><span class="track"><span class="fill b" style="display:block;width:${b/8*100}%"></span></span><span class="num">${b}/8</span></div>
+      </div>
+    </section>
+    ${first && total < 16 ? `<section class="today ${low?'big':''}">
+      <span class="label">まずはここから</span>
+      <h2>${esc(C[first].head)}</h2>
+      <p>${esc(C[first].desc)}</p>
+      ${BLOG?`<a class="more" href="${BLOG}" target="_blank" rel="noopener">設定のしかたをブログで見る</a>`:''}
+      ${low && weakIds.length>1 ? `<p style="font-size:13.5px;margin-top:8px">ほかに注意したいところ</p><div class="missing">${weakIds.slice(1).map(id=>`<span>${esc(C[id].name)}</span>`).join('')}</div>`:''}
+    </section>`:''}
+    <section class="sec-head"><h2>おすすめの対策</h2><p>${weakIds.length ? "注意したいところから並べました。" : "いまのやり方の確認にどうぞ。"}</p></section>`}
+    <section class="cards">${order.map(id=>cardHTML(id, !peek && weakIds.includes(id), !peek)).join('')}</section>
+    <button type="button" class="primary restart" id="restart">${peek?'診断をはじめる':'もう一度やる'}</button>
+  </div>`;
+  app.querySelectorAll(".flip").forEach(btn => btn.onclick = () => {
+    const id = Number(btn.dataset.id);
+    S.flipped.has(id) ? S.flipped.delete(id) : S.flipped.add(id);
+    renderResult();
+    document.getElementById("flip"+id)?.focus();
+  });
+  app.querySelector("#restart").onclick = () => { S.step=0; S.ans={}; S.age=null; S.peek=false; S.flipped.clear(); render(); scrollTop(); };
+}
+
+function scrollTop(){ try{ window.scrollTo({top:0, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"}); }catch(e){} }
+
+render();
+</script>
+
+</body>
+</html>
