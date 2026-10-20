@@ -175,6 +175,17 @@ details.help .inner{background:var(--honey-tint); border-radius:var(--r-card); p
 }
 .card .flip:hover{background:var(--terra-tint)}
 .restart{align-self:center}
+/* 解説動画：押すまでYouTubeを読み込まない（サムネイルは手元の画像） */
+.video{display:flex;flex-direction:column;gap:10px}
+.video h2{font-size:clamp(20px,3.6vw,24px);font-weight:700}
+.video p{font-size:14px;color:var(--muted)}
+.vbox{position:relative;width:100%;max-width:640px;aspect-ratio:16/9;border-radius:var(--r-card);overflow:hidden;border:1px solid var(--line);background:var(--card)}
+.vbox button{all:unset;cursor:pointer;position:absolute;inset:0;display:block}
+.vbox img{width:100%;height:100%;object-fit:cover;display:block}
+.vbox .play{position:absolute;right:18px;bottom:18px;width:68px;height:68px;border-radius:50%;background:var(--primary);display:grid;place-items:center;box-shadow:var(--shadow-card)}
+.vbox .play::after{content:"";margin-left:6px;border-style:solid;border-width:14px 0 14px 22px;border-color:transparent transparent transparent var(--on-primary)}
+.vbox button:focus-visible{outline:3px solid var(--primary);outline-offset:-3px}
+.vbox iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 footer{margin-top:44px; padding-top:18px; border-top:1px solid var(--line); color:var(--muted); font-size:12.5px; line-height:1.8}
 
 /* 図の色（SVGはトークンから塗る） */
@@ -202,6 +213,7 @@ footer{margin-top:44px; padding-top:18px; border-top:1px solid var(--line); colo
   <footer>
     サービスから漏れた情報は防げなくても、次々に乗っ取られる危険は、自分の対策で大きく減らせます。<br>
     答えの扱い：保存するのは、答えた日（日付だけ）・9問の答え・年代だけです。名前やメールアドレス、IPアドレスは保存しません。集計して「診断した人のうち何％」を出すために使います。<br>
+    解説動画は、再生ボタンを押したときにだけYouTube（youtube-nocookie.com）から読み込みます。<br>
     事業者の方へ：<a href="business.html" style="color:var(--primary)">その個人情報、本当に要りますか</a>
   </footer>
 </div>
@@ -211,6 +223,7 @@ footer{margin-top:44px; padding-top:18px; border-top:1px solid var(--line); colo
 const AXES = {a:"戸締まり", b:"もしもの備え"};
 const BLOG = "";   // 解説記事を公開したら入れる。空のあいだはリンクを出さない
 const ASK_AGE = true;
+const VIDEO_ID = "ZO-ru4jJ26k";   // 解説動画「今日からできる9つの守り」（2026-10-20公開）
 const API = "https://security-checkup.miki-protection.workers.dev";   // 答えの受け取り口（Cloudflare Workers）。保存するのは日付・年代・9問の答えだけ
 const Q = [
   {id:1, axis:"a", title:"パスワードの種類について、いちばん近いものはどれですか",
@@ -398,6 +411,8 @@ function renderResult(){
       ${BLOG?`<a class="more" href="${BLOG}" target="_blank" rel="noopener">設定のしかたをブログで見る</a>`:''}
       ${low && weakIds.length>1 ? `<p style="font-size:13.5px;margin-top:8px">ほかに注意したいところ</p><div class="missing">${weakIds.slice(1).map(id=>`<span>${esc(C[id].name)}</span>`).join('')}</div>`:''}
     </section>`:''}
+    <section class="video" aria-labelledby="vh"><h2 id="vh">動画で見る（2分35秒）</h2><p>9つの守りを、まとめてお話ししています。</p>
+      <div class="vbox" id="vbox"><button type="button" id="vplay" aria-label="解説動画を再生する（YouTubeを読み込みます）"><img src="video_thumb.png" alt="今日からできる9つの守り"><span class="play" aria-hidden="true"></span></button></div></section>
     <section class="sec-head"><h2>おすすめの対策</h2><p>${weakIds.length ? "注意したいところから並べました。" : "いまのやり方の確認にどうぞ。"}</p></section>`}
     <section class="cards">${order.map(id=>cardHTML(id, !peek && weakIds.includes(id), !peek)).join('')}</section>
     <button type="button" class="primary restart" id="restart">${peek?'診断をはじめる':'もう一度やる'}</button>
@@ -408,6 +423,10 @@ function renderResult(){
     renderResult();
     document.getElementById("flip"+id)?.focus();
   });
+  const vplay = app.querySelector("#vplay");
+  if (vplay) vplay.onclick = () => {
+    app.querySelector("#vbox").innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${VIDEO_ID}?autoplay=1&rel=0" title="今日からできる9つの守り" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
+  };
   app.querySelector("#restart").onclick = () => { S.step=0; S.ans={}; S.age=null; S.peek=false; S.sent=false; S.flipped.clear(); render(); scrollTop(); };
 }
 
