@@ -1,6 +1,6 @@
 // 2分セキュリティ診断の答えを受け取って、集計する。
 // POST /answer … 診断ページから答えを1件受け取る（診断ページ以外からは受け付けない）
-// GET  /stats  … 集計を返す（選択肢ごとの人数・年代ごとの人数）
+// GET  /stats  … 集計を返す（選択肢ごとの人数・年代ごとの人数・年代ごとの選択肢の人数）
 // ★IPアドレスやブラウザの情報は保存しない。保存するのは日付・年代・9問の答えだけ。
 
 const ORIGIN = "https://mikiyoko.github.io";
@@ -43,12 +43,16 @@ async function stats(env) {
   let total = 0;
   const questions = OPTIONS.map((k) => Array(k).fill(0));
   const ages = Array(AGES).fill(0);
+  const byAge = Array.from({ length: AGES }, () => OPTIONS.map((k) => Array(k).fill(0)));
   for (const r of results) {
     total += r.n;
     ages[r.age] += r.n;
-    for (let i = 0; i < OPTIONS.length; i++) questions[i][r["q" + (i + 1)]] += r.n;
+    for (let i = 0; i < OPTIONS.length; i++) {
+      questions[i][r["q" + (i + 1)]] += r.n;
+      byAge[r.age][i][r["q" + (i + 1)]] += r.n;
+    }
   }
-  return json({ total, questions, ages }, 200, { "Cache-Control": "public, max-age=300" });
+  return json({ total, questions, ages, byAge }, 200, { "Cache-Control": "public, max-age=300" });
 }
 
 export default {
