@@ -9,3 +9,12 @@ CREATE TABLE IF NOT EXISTS answers (
   q4 INTEGER NOT NULL, q5 INTEGER NOT NULL, q6 INTEGER NOT NULL,
   q7 INTEGER NOT NULL, q8 INTEGER NOT NULL, q9 INTEGER NOT NULL
 );
+
+-- 開いた回数・答え始めた回数を、日付ごとの数だけで数える（2026-10-20 追加）。
+-- 誰が開いたかは持たない。日付と種類と回数だけ。最後まで答えた数は answers の件数で数える。
+CREATE TABLE IF NOT EXISTS events (
+  day  TEXT    NOT NULL,
+  kind TEXT    NOT NULL,
+  n    INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (day, kind)
+);

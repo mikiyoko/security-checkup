@@ -1,11 +1,13 @@
 // 2分セキュリティ診断の答えを受け取って、集計する。
 // POST /answer … 診断ページから答えを1件受け取る（診断ページ以外からは受け付けない）
-// GET  /stats  … 集計を返す（選択肢ごとの人数・年代ごとの人数・年代ごとの選択肢の人数）
+// POST /event  … 「開いた」「答え始めた」を1回と数える（日付ごとの回数だけを足す）
+// GET  /stats  … 集計を返す（選択肢ごとの人数・年代ごとの人数・年代ごとの選択肢の人数・日付ごとの回数）
 // ★IPアドレスやブラウザの情報は保存しない。保存するのは日付・年代・9問の答えだけ。
 
 const ORIGIN = "https://mikiyoko.github.io";
 const OPTIONS = [3, 4, 3, 3, 3, 3, 3, 3, 3]; // 問いごとの選択肢の数（Q1〜Q9）
 const AGES = 8; // 10代〜70代以上・答えない
+const KINDS = ["view", "start"]; // 開いた・答え始めた（最後まで答えた数は answers の件数）
 
 const cors = {
   "Access-Control-Allow-Origin": ORIGIN,
@@ -27,12 +29,25 @@ function valid(body) {
 async function answer(request, env) {
   if (request.headers.get("Origin") !== ORIGIN) return json({ error: "forbidden" }, 403);
   let body;
-  try { body = await request.json(); } catch { return json({ error: "bad request" }, 400); }
+  try { body = JSON.parse(await request.text()); } catch { return json({ error: "bad request" }, 400); }
   if (!valid(body)) return json({ error: "bad request" }, 400);
   const day = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10); // 日本時間の日付
   await env.DB.prepare(
     "INSERT INTO answers (day, age, q1, q2, q3, q4, q5, q6, q7, q8, q9) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
   ).bind(day, body.age, ...body.answers).run();
+  return new Response(null, { status: 204, headers: cors });
+}
+
+const today = () => new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10); // 日本時間の日付
+
+async function event(request, env) {
+  if (request.headers.get("Origin") !== ORIGIN) return json({ error: "forbidden" }, 403);
+  let body;
+  try { body = JSON.parse(await request.text()); } catch { return json({ error: "bad request" }, 400); }
+  if (!body || !KINDS.includes(body.kind)) return json({ error: "bad request" }, 400);
+  await env.DB.prepare(
+    "INSERT INTO events (day, kind, n) VALUES (?, ?, 1) ON CONFLICT(day, kind) DO UPDATE SET n = n + 1"
+  ).bind(today(), body.kind).run();
   return new Response(null, { status: 204, headers: cors });
 }
 
@@ -52,7 +67,13 @@ async function stats(env) {
       byAge[r.age][i][r["q" + (i + 1)]] += r.n;
     }
   }
-  return json({ total, questions, ages, byAge }, 200, { "Cache-Control": "public, max-age=300" });
+  // 日付ごとの回数（開いた・答え始めた・最後まで答えた）
+  const days = {};
+  const ev = await env.DB.prepare("SELECT day, kind, n FROM events").all();
+  for (const r of ev.results) (days[r.day] ??= { view: 0, start: 0, done: 0 })[r.kind] = r.n;
+  const dn = await env.DB.prepare("SELECT day, COUNT(*) AS n FROM answers GROUP BY day").all();
+  for (const r of dn.results) (days[r.day] ??= { view: 0, start: 0, done: 0 }).done = r.n;
+  return json({ total, questions, ages, byAge, days }, 200, { "Cache-Control": "public, max-age=300" });
 }
 
 export default {
@@ -60,6 +81,7 @@ export default {
     const { pathname } = new URL(request.url);
     if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
     if (pathname === "/answer" && request.method === "POST") return answer(request, env);
+    if (pathname === "/event" && request.method === "POST") return event(request, env);
     if (pathname === "/stats" && request.method === "GET") return stats(env);
     return json({ error: "not found" }, 404);
   },

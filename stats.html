@@ -75,6 +75,10 @@ p{margin:0}
 .ref{position:absolute;top:-4px;bottom:-4px;border-left:2px dashed var(--ink)}
 .val{font-family:var(--en-h);font-weight:600;font-variant-numeric:tabular-nums;text-align:right}
 .val small{display:block;font-family:var(--ja-b);font-weight:400;font-size:11.5px;color:var(--muted)}
+table.days{border-collapse:collapse;font-size:13.5px;min-width:320px}
+table.days th,table.days td{padding:6px 12px;border-bottom:1px solid var(--line);text-align:right}
+table.days th:first-child,table.days td:first-child{text-align:left}
+table.days .num{font-family:var(--en-h);font-variant-numeric:tabular-nums}
 .refnote{font-size:12.5px;color:var(--muted)}
 .refnote b{color:var(--ink);font-weight:500}
 .few{font-size:13px;color:var(--muted)}
@@ -144,13 +148,30 @@ function render(data){
   let sum = 0;
   qs.forEach((opts, qi) => opts.forEach((c, oi) => sum += c * points(qi, oi)));
   const avg = n ? Math.round(sum / n * 10) / 10 : 0;
-  document.getElementById("tiles").innerHTML =
-    `<div class="tile"><div class="k">答えた人</div><div class="v">${n}</div></div>` +
+  // 開いた → 答え始めた → 最後まで答えた（年代でしぼっていないときだけ。日付ごとの回数の合計）
+  const D = data.days || {};
+  const tally = k => Object.values(D).reduce((s, d) => s + (d[k] || 0), 0);
+  const fv = tally("view"), fs = tally("start"), fd = tally("done");
+  const rate = (a, b) => b ? Math.round(a / b * 100) + "%" : "–";
+  const funnel = a === null ?
+    `<div class="tile"><div class="k">開いた</div><div class="v">${fv}</div></div>` +
+    `<div class="tile"><div class="k">答え始めた（開いた人の${rate(fs, fv)}）</div><div class="v">${fs}</div></div>` +
+    `<div class="tile"><div class="k">最後まで答えた（答え始めた人の${rate(fd, fs)}）</div><div class="v">${fd}</div></div>` : "";
+  document.getElementById("tiles").innerHTML = funnel +
+    (a === null ? "" : `<div class="tile"><div class="k">答えた人</div><div class="v">${n}</div></div>`) +
     `<div class="tile"><div class="k">平均点（18点満点）</div><div class="v">${n ? avg : "–"}</div></div>`;
   const few = a !== null && n < MIN_SHOW;
   document.getElementById("few").textContent = few ? `この年代はまだ${MIN_SHOW}人未満なので、数字は出していません` : "";
   const main = document.getElementById("qs");
   main.innerHTML = "";
+  // 日付ごとの回数（新しい順に14日）
+  if (a === null && Object.keys(D).length) {
+    const rows = Object.keys(D).sort().reverse().slice(0, 14).map(d => `<tr><td>${d}</td><td class="num">${D[d].view||0}</td><td class="num">${D[d].start||0}</td><td class="num">${D[d].done||0}</td></tr>`).join("");
+    const el = document.createElement("section");
+    el.className = "q";
+    el.innerHTML = `<h2>日付ごと</h2><div style="overflow-x:auto"><table class="days"><thead><tr><th>日付</th><th>開いた</th><th>答え始めた</th><th>最後まで</th></tr></thead><tbody>${rows}</tbody></table></div><p class="refnote">「開いた」は、ページを開いた回数です（同じ人が何度か開くと、その分数えます）。2026-10-20 から数え始めました。</p>`;
+    main.appendChild(el);
+  }
   // 年代の内訳（しぼっていないときだけ）
   if (a === null) main.appendChild(block("年代", "", AGE.map((label, i) => [label, data.ages[i]]), data.total, null));
   if (few) return;
