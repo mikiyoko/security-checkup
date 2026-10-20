@@ -221,7 +221,9 @@ footer{margin-top:44px; padding-top:18px; border-top:1px solid var(--line); colo
 <script>
 /* ── 問い ── */
 const AXES = {a:"戸締まり", b:"もしもの備え"};
-const BLOG = "";   // 解説記事を公開したら入れる。空のあいだはリンクを出さない
+const BLOG = "https://note.com/mikiyoko/n/n0a26bfff4f31";   // 解説記事（note・2026-10-20公開）
+// カードから記事の該当する節へ直接飛ぶための、noteの見出しのID（記事を書き直して見出しが変わったら取り直す）
+const ANCHOR = {1: "a8397c51-5c7c-45db-9774-ae92a061cad8", 2: "be3f5bec-c91f-484e-93ef-4a48df3b7d6f", 3: "19558a4a-e963-40a8-a077-7801388b8504", 4: "97238e39-4164-4b21-8e00-f2ed5ff3d9a1", 5: "463f5cf0-5230-4013-9485-6bbe8132ca1b", 6: "d3c36f85-898a-4be7-a6ee-efa4824a3d15", 7: "ae7a6b4d-84b3-4f8b-be30-1708428d6e93", 8: "6d9b5558-bc16-4e9d-846e-e86bfee38035", 9: "4e2e8afe-327f-4fd9-8106-faf66f7137e3"};
 const ASK_AGE = true;
 const VIDEO_ID = "ZO-ru4jJ26k";   // 解説動画「今日からできる9つの守り」（2026-10-20公開）
 const API = "https://security-checkup.miki-protection.workers.dev";   // 答えの受け取り口（Cloudflare Workers）。保存するのは日付・年代・9問の答えだけ
@@ -366,7 +368,7 @@ function cardHTML(id, weak, showFlag){
       ${open?`<div class="back">
         <p>${esc(c.desc)}</p>
         <p class="now"><b>いまは</b>${esc(c.now)}</p>
-        ${BLOG?`<a class="more" href="${BLOG}" target="_blank" rel="noopener">設定のしかたをブログで見る</a>`:''}
+        ${BLOG?`<a class="more" href="${BLOG}#${ANCHOR[id]}" target="_blank" rel="noopener">設定のしかたを記事で見る</a>`:''}
       </div>`:''}
       <button type="button" class="flip" id="flip${id}" data-id="${id}" aria-expanded="${open}">${open?'とじる':'やり方を見る'}</button>
     </div>
@@ -408,7 +410,7 @@ function renderResult(){
       <span class="label">まずはここから</span>
       <h2>${esc(C[first].head)}</h2>
       <p>${esc(C[first].desc)}</p>
-      ${BLOG?`<a class="more" href="${BLOG}" target="_blank" rel="noopener">設定のしかたをブログで見る</a>`:''}
+      ${BLOG?`<a class="more" href="${BLOG}#${ANCHOR[first]}" target="_blank" rel="noopener">設定のしかたを記事で見る</a>`:''}
       ${low && weakIds.length>1 ? `<p style="font-size:13.5px;margin-top:8px">ほかに注意したいところ</p><div class="missing">${weakIds.slice(1).map(id=>`<span>${esc(C[id].name)}</span>`).join('')}</div>`:''}
     </section>`:''}
     <section class="video" aria-labelledby="vh"><h2 id="vh">動画で見る（2分35秒）</h2><p>9つの守りを、まとめてお話ししています。</p>
