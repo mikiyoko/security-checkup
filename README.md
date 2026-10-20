@@ -23,6 +23,7 @@
 | `index.html` | 診断ページ |
 | `business.html` | 事業者向けページ |
 | `favicon.svg` | アイコン |
+| `ogp.png`・`ogp_business.png` | SNSでシェアしたときのサムネイル |
 
 どちらのページも、外部のライブラリを使わない1枚のHTMLです（書体はGoogle Fonts）。
 
