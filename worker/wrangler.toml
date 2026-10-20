@@ -1,0 +1,13 @@
+name = "security-checkup"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+workers_dev = true
+
+# ★リクエストの記録（ログ）は残さない。IPアドレスなどを手元に持たないため
+[observability]
+enabled = false
+
+[[d1_databases]]
+binding = "DB"
+database_name = "security-checkup"
+database_id = "31eed498-21e2-4302-891e-caafa4655b7c"

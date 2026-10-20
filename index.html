@@ -192,7 +192,7 @@ footer{margin-top:44px; padding-top:18px; border-top:1px solid var(--line); colo
 
 <div class="wrap">
   <header class="top">
-    <span class="proto">答えはこのページの中だけで計算します。どこにも送りません</span>
+    <span class="proto">答えは、名前などと結びつけずに集計します</span>
     <h1>2分セキュリティ診断</h1>
     <p class="lead">9つの問いに答えると、どこから手をつければいいかが分かります。</p>
   </header>
@@ -200,7 +200,8 @@ footer{margin-top:44px; padding-top:18px; border-top:1px solid var(--line); colo
   <main id="app"></main>
 
   <footer>
-    サービスから漏れた情報は防げなくても、次々に乗っ取られるのは自分で止められます。<br>
+    サービスから漏れた情報は防げなくても、次々に乗っ取られる危険は、自分の対策で大きく減らせます。<br>
+    答えの扱い：保存するのは、答えた日（日付だけ）・9問の答え・年代だけです。名前やメールアドレス、IPアドレスは保存しません。集計して「診断した人のうち何％」を出すために使います。<br>
     事業者の方へ：<a href="business.html" style="color:var(--primary)">その個人情報、本当に要りますか</a>
   </footer>
 </div>
@@ -209,7 +210,8 @@ footer{margin-top:44px; padding-top:18px; border-top:1px solid var(--line); colo
 /* ── 問い ── */
 const AXES = {a:"戸締まり", b:"もしもの備え"};
 const BLOG = "";   // 解説記事を公開したら入れる。空のあいだはリンクを出さない
-const ASK_AGE = false;   // 答えを集める仕組みをつなぐまでは、年代を聞かない
+const ASK_AGE = true;
+const API = "https://security-checkup.miki-protection.workers.dev";   // 答えの受け取り口（Cloudflare Workers）。保存するのは日付・年代・9問の答えだけ
 const Q = [
   {id:1, axis:"a", title:"パスワードの種類について、いちばん近いものはどれですか",
    opts:[["基本的に、サービスごとにちがうパスワードにしている",2],["大事なサービスだけ、ちがうパスワードにしている",1],["同じパスワードを、いくつものサービスで使っている",0]]},
@@ -269,7 +271,7 @@ const FIG = {
 };
 
 /* ── 状態 ── */
-const S = {step:0, ans:{}, age:null, flipped:new Set()};
+const S = {step:0, ans:{}, age:null, flipped:new Set(), sent:false};
 const app = document.getElementById("app");
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
@@ -358,8 +360,19 @@ function cardHTML(id, weak, showFlag){
   </article>`;
 }
 
+// 1回の診断で1回だけ送る。送れなくても、結果の表示には影響させない
+function send(){
+  if (S.sent || S.peek || S.age == null) return;
+  S.sent = true;
+  try {
+    fetch(API + "/answer", {method:"POST", headers:{"Content-Type":"application/json"}, keepalive:true,
+      body: JSON.stringify({answers: Q.map(q => S.ans[q.id]), age: S.age})}).catch(()=>{});
+  } catch(e) {}
+}
+
 function renderResult(){
   const peek = S.peek;
+  send();
   const a = Q.filter(q=>q.axis==="a").reduce((s,q)=>s+pts(q.id),0);
   const b = Q.filter(q=>q.axis==="b").reduce((s,q)=>s+pts(q.id),0);
   const total = a + b, bd = band(total);
@@ -395,7 +408,7 @@ function renderResult(){
     renderResult();
     document.getElementById("flip"+id)?.focus();
   });
-  app.querySelector("#restart").onclick = () => { S.step=0; S.ans={}; S.age=null; S.peek=false; S.flipped.clear(); render(); scrollTop(); };
+  app.querySelector("#restart").onclick = () => { S.step=0; S.ans={}; S.age=null; S.peek=false; S.sent=false; S.flipped.clear(); render(); scrollTop(); };
 }
 
 function scrollTop(){ try{ window.scrollTo({top:0, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"}); }catch(e){} }
